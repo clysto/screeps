@@ -5,12 +5,14 @@
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "upload": "grunt screeps"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@types/screeps": "^3.3.8"
+  "devDependencies": {
+    "@types/screeps": "^3.3.8",
+    "dotenv": "^16.4.5",
+    "grunt-screeps": "^1.5.0"
   }
 }
