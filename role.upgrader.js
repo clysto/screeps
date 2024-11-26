@@ -1,4 +1,4 @@
-var roleUpgrader = {
+const roleUpgrader = {
   /** @param {Creep} creep **/
   run: function (creep) {
     if (creep.memory.upgrading && creep.store[RESOURCE_ENERGY] == 0) {

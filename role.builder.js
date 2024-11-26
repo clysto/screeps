@@ -1,6 +1,6 @@
 const { bestSource } = require('utils');
 
-var roleBuilder = {
+const roleBuilder = {
   /** @param {Creep} creep **/
   run: function (creep) {
     if (creep.memory.building && creep.store[RESOURCE_ENERGY] == 0) {
@@ -13,7 +13,7 @@ var roleBuilder = {
     }
 
     if (creep.memory.building) {
-      var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+      const targets = creep.room.find(FIND_CONSTRUCTION_SITES);
       targets.sort((t1, t2) => {
         const priority = {
           STRUCTURE_EXTENSION: 1,
@@ -36,7 +36,7 @@ var roleBuilder = {
         }
       }
     } else {
-      var source = bestSource(creep);
+      const source = bestSource(creep);
       if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
         creep.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } });
       }

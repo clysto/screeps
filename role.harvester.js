@@ -1,7 +1,7 @@
 const roleBuilder = require('role.builder');
 const { bestSource } = require('utils');
 
-var roleHarvester = {
+const roleHarvester = {
   /** @param {Creep} creep **/
   run: function (creep) {
     if (creep.room.energyAvailable >= creep.room.energyCapacityAvailable) {
@@ -10,12 +10,12 @@ var roleHarvester = {
     }
 
     if (creep.store.getFreeCapacity() > 0) {
-      var source = bestSource(creep);
+      const source = bestSource(creep);
       if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
         creep.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } });
       }
     } else {
-      var target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+      const target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
         filter: (structure) => {
           return (
             (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&

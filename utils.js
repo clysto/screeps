@@ -31,10 +31,10 @@ function enterablePositionsAround(o) {
 }
 
 function isEnterable(pos) {
-  var atPos = pos.look();
-  var SWAMP = 'swamp';
-  var PLAIN = 'plain';
-  for (var i = 0; i < atPos.length; i++) {
+  const atPos = pos.look();
+  const SWAMP = 'swamp';
+  const PLAIN = 'plain';
+  for (let i = 0; i < atPos.length; i++) {
     switch (atPos[i].type) {
       case LOOK_TERRAIN:
         if (atPos[i].terrain != PLAIN && atPos[i].terrain != SWAMP) return false;
