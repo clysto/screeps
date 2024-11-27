@@ -5,15 +5,30 @@ const roleBuilder = {
   run: function (creep) {
     if (creep.memory.building && creep.store[RESOURCE_ENERGY] == 0) {
       creep.memory.building = false;
-      creep.say('🔄 harvest');
+      creep.say('harvest');
     }
     if (!creep.memory.building && creep.store.getFreeCapacity() == 0) {
       creep.memory.building = true;
-      creep.say('🚧 build');
+      creep.say('build');
     }
 
     if (creep.memory.building) {
       const targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+      // if (!targets.length) {
+      //   if (creep.room.name != 'E54S18') {
+      //     creep.moveTo(new RoomPosition(16, 4, 'E54S18'), { visualizePathStyle: { stroke: '#9900ff' } });
+      //     return;
+      //   } else {
+      //     creep.moveTo(new RoomPosition(20, 20, 'E54S17'), { visualizePathStyle: { stroke: '#9900ff' } });
+      //     return;
+      //   }
+      // }
+
+      if (creep.room.name != 'E54S17') {
+        creep.moveTo(new RoomPosition(20, 20, 'E54S17'), { visualizePathStyle: { stroke: '#9900ff' } });
+        return;
+      }
+
       targets.sort((t1, t2) => {
         const priority = {
           STRUCTURE_EXTENSION: 1,

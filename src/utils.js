@@ -4,9 +4,11 @@ function bestSource(creep) {
   sources.sort((s1, s2) => {
     let enterable1 = enterablePositionsAround(s1);
     let enterable2 = enterablePositionsAround(s2);
+    let d1 = creep.pos.getRangeTo(s1);
+    let d2 = creep.pos.getRangeTo(s2);
 
-    const c1 = creep.pos.getRangeTo(s1) - enterable1 * 15;
-    const c2 = creep.pos.getRangeTo(s2) - enterable2 * 15;
+    const c1 = d1 <= 1 ? -10000 : d1 - enterable1 * 15;
+    const c2 = d2 <= 1 ? -10000 : d2 - enterable2 * 15;
 
     return c1 - c2;
   });
@@ -17,6 +19,7 @@ function bestSource(creep) {
   }
 }
 
+/** @param {RoomObject} o **/
 function enterablePositionsAround(o) {
   let count = 0;
   count += isEnterable(o.room.getPositionAt(o.pos.x - 1, o.pos.y - 1)) ? 1 : 0;
@@ -30,6 +33,7 @@ function enterablePositionsAround(o) {
   return count;
 }
 
+/** @param {RoomPosition} pos **/
 function isEnterable(pos) {
   const atPos = pos.look();
   const SWAMP = 'swamp';
@@ -44,7 +48,6 @@ function isEnterable(pos) {
         break;
       case LOOK_CREEPS:
         return false;
-        break;
       case LOOK_SOURCES:
       case LOOK_MINERALS:
       case LOOK_NUKES:

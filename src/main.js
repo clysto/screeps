@@ -11,14 +11,21 @@ module.exports.loop = function () {
   }
 
   const creepsCount = {
-    harvester: 0,
+    harvester: {
+      E54S17: 0,
+      E54S18: 0,
+    },
     builder: 0,
     upgrader: 0,
   };
 
   for (let name in Game.creeps) {
     let creep = Game.creeps[name];
-    creepsCount[creep.memory.role]++;
+    if (creep.memory.role == 'harvester') {
+      creepsCount[creep.memory.role][creep.memory.harvestRoom]++;
+    } else {
+      creepsCount[creep.memory.role]++;
+    }
     if (creep.memory.role == 'harvester') {
       roleHarvester.run(creep);
     }
@@ -31,8 +38,22 @@ module.exports.loop = function () {
   }
 
   for (let role in creepsCount) {
+    if (role == 'harvester') {
+      for (let room in creepsCount[role]) {
+        if (creepsCount[role][room] < 5) {
+          let ret = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, MOVE, WORK, CARRY, MOVE], Game.time, {
+            memory: { role: role, harvestRoom: room },
+          });
+          if (ret == OK) {
+            console.log(`Spawn a ${role} who harvests in ${room}`);
+          }
+        }
+      }
+      continue;
+    }
+
     if (creepsCount[role] < 5) {
-      let ret = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, MOVE], Game.time, {
+      let ret = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, MOVE, WORK, CARRY, MOVE], Game.time, {
         memory: { role: role },
       });
       if (ret == OK) {
