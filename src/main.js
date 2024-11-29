@@ -13,8 +13,8 @@ module.exports.loop = function () {
 
   const creepsCount = {
     harvester: {
-      E54S17: 0,
       E54S18: 0,
+      E54S17: 0,
       E54S19: 0,
     },
     upgrader: 0,
@@ -56,7 +56,7 @@ module.exports.loop = function () {
   for (let role in creepsCount) {
     if (role == 'harvester') {
       for (let room in creepsCount[role]) {
-        if (creepsCount[role][room] < 3) {
+        if (creepsCount[role][room] < (role == 'upgrader' ? 6 : 3)) {
           let ret = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, MOVE], Game.time, {
             memory: { role: role, harvestRoom: room },
           });

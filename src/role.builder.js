@@ -18,9 +18,11 @@ const roleBuilder = {
 
     if (creep.memory.building) {
       const targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+      // Game.memory.constructionSites[creep.room.name] = targets.length;
+
       if (!targets.length) {
-        if (creep.room.name != 'E54S18') {
-          creep.moveTo(new RoomPosition(16, 4, 'E54S18'), { visualizePathStyle: { stroke: '#9900ff' } });
+        if (creep.room.name != 'E54S19') {
+          creep.moveTo(new RoomPosition(16, 4, 'E54S19'), { visualizePathStyle: { stroke: '#9900ff' } });
           return;
         } else {
           creep.moveTo(new RoomPosition(20, 20, 'E54S17'), { visualizePathStyle: { stroke: '#9900ff' } });

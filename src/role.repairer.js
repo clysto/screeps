@@ -1,3 +1,5 @@
+const { bestSource } = require('utils');
+
 const roleRepairer = {
   /** @param {Creep} creep **/
   run: function (creep) {
@@ -14,7 +16,7 @@ const roleRepairer = {
 
     if (creep.memory.repairing) {
       // 查找需要修理的建筑
-      const targets = creep.room.find(FIND_STRUCTURES, {
+      const targets = creep.room.find(FIND_MY_STRUCTURES, {
         filter: (structure) => structure.hits < structure.hitsMax,
       });
 
