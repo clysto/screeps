@@ -13,7 +13,7 @@ const harvester = {
       // If we already harvested from a source, prefer to keep harvesting from it
       if (creep.memory._harvestSourceId) {
         const source = Game.getObjectById(creep.memory._harvestSourceId);
-        if (source && harvester.harvestersAtSource(source) <= enterablePositionsAround(source)) {
+        if (source && harvester.harvestersAtSource(source) < enterablePositionsAround(source)) {
           return { type: 'harvestSource', target: source.id };
         }
       }
@@ -27,6 +27,7 @@ const harvester = {
         creep.memory._harvestSourceId = source.id;
         return { type: 'harvestSource', target: source.id };
       } else {
+        delete creep.memory._harvestSourceId;
         return { type: 'moveToRoom', target: 'E54S19' };
       }
     } else {
@@ -78,17 +79,7 @@ const builder = {
       if (structure) {
         return { type: 'withdrawEnergy', target: structure.id };
       } else {
-        const source = creep.pos.findClosestByPath(FIND_SOURCES, {
-          filter: (source) => {
-            let count = harvester.harvestersAtSource(source);
-            return enterablePositionsAround(source) > count;
-          },
-        });
-        if (source) {
-          return { type: 'harvestSource', target: source.id };
-        } else {
-          return { type: 'idle', reason: 'no sources' };
-        }
+        return harvester.nextAction(creep);
       }
     } else {
       const constructionSite = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES);
@@ -109,12 +100,14 @@ const repairer = {
       if (structure) {
         return { type: 'withdrawEnergy', target: structure.id };
       } else {
-        return { type: 'idle', reason: 'no energy' };
+        return harvester.nextAction(creep);
       }
     } else {
-      const structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+      const structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (structure) => {
-          return structure.hits < structure.hitsMax;
+          return (
+            (structure.my || structure.structureType == STRUCTURE_ROAD) && structure.hits < structure.hitsMax * 0.66
+          );
         },
       });
       if (structure) {

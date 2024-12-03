@@ -6,8 +6,17 @@ function idle(creep) {
   if (creep.memory.action.reason) {
     console.log(`${creep.who()} is idle because ${creep.memory.action.reason}`);
   }
-  // random move
-  creep.move(Math.floor(Math.random() * 8) + 1);
+
+  const flag = creep.pos.findClosestByPath(FIND_FLAGS, {
+    filter: (flag) => {
+      return flag.name.startsWith('idle');
+    },
+  });
+
+  if (flag && creep.pos.getRangeTo(flag) > 3) {
+    creep.moveTo(flag, { visualizePathStyle: { stroke: '#000000' } });
+  }
+
   if (creep.memory.action.idleTicks == undefined) {
     creep.memory.action = undefined;
   } else {
@@ -21,8 +30,16 @@ function idle(creep) {
 /** @param {Creep} creep **/
 function harvestSource(creep) {
   const target = Game.getObjectById(creep.memory.action.target);
-  if (creep.harvest(target) == ERR_NOT_IN_RANGE) {
+  if (!target) {
+    creep.memory.action = undefined;
+  }
+
+  const status = creep.harvest(target);
+  if (status == ERR_NOT_IN_RANGE) {
     creep.moveTo(target, { visualizePathStyle: { stroke: '#ffaa00' } });
+  } else if (status != OK) {
+    // action stop
+    creep.memory.action = undefined;
   }
   if (creep.store.getFreeCapacity() == 0) {
     // action stop
@@ -72,11 +89,11 @@ function withdrawEnergy(creep) {
   const target = Game.getObjectById(creep.memory.action.target);
   if (!target || target.store[RESOURCE_ENERGY] == 0) {
     // action stop
-    creep.say('🛑');
     creep.memory.action = undefined;
     return;
   }
-  if (Game.stopWithdraw && Game.stopWithdraw[target.room.name]) {
+  if (global._stopWithdraw && global._stopWithdraw[target.room.name]) {
+    creep.say('🛑');
     creep.memory.action = undefined;
     return;
   }
@@ -105,10 +122,14 @@ function upgradeController(creep) {
 /** @param {Creep} creep **/
 function repairStructure(creep) {
   const target = Game.getObjectById(creep.memory.action.target);
-  if (creep.repair(target) == ERR_NOT_IN_RANGE) {
-    creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
+  const status = creep.repair(target);
+  if (status == ERR_NOT_IN_RANGE) {
+    creep.moveTo(target, { visualizePathStyle: { stroke: '#00ff00' } });
+  } else if (status != OK) {
+    // action stop
+    creep.memory.action = undefined;
   }
-  if (creep.store[RESOURCE_ENERGY] == 0) {
+  if (creep.store[RESOURCE_ENERGY] == 0 || target.hits == target.hitsMax) {
     // action stop
     creep.memory.action = undefined;
   }
@@ -123,7 +144,7 @@ function moveToRoom(creep) {
   }
   const target = new RoomPosition(25, 25, creep.memory.action.target);
   if (creep.room.name != creep.memory.action.target) {
-    creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
+    creep.moveTo(target, { visualizePathStyle: { stroke: '#800080' } });
   } else {
     // action stop
     creep.memory.action = undefined;
@@ -150,10 +171,10 @@ function spawnCreep(action) {
     memory: { role: role },
   });
   if (status == ERR_NOT_ENOUGH_ENERGY) {
-    if (!Game.stopWithdraw) {
-      Game.stopWithdraw = {};
+    if (!global._stopWithdraw) {
+      global._stopWithdraw = {};
     }
-    Game.stopWithdraw[spawn.room.name] = true;
+    global._stopWithdraw[spawn.room.name] = true;
   }
 }
 

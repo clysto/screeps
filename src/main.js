@@ -57,7 +57,7 @@ const BALANCED_ROLES = {
     priority: 80,
   },
   repairer: {
-    count: 2,
+    count: 5,
     priority: 70,
   },
   soldier: {
@@ -75,6 +75,12 @@ module.exports.loop = function () {
   for (let spawn of Object.values(Game.spawns)) {
     global.rooms[spawn.room.name] = spawn.room;
   }
+  for (let creep of Object.values(Game.creeps)) {
+    global.rooms[creep.room.name] = creep.room;
+  }
+
+  console.log(`===================== Tick ${Game.time} =====================`);
+  console.log(`${Object.keys(Game.creeps).length} creeps in ${Object.keys(global.rooms).length} rooms`);
 
   const busyCreeps = Object.values(Game.creeps).filter((creep) => creep.memory.action);
   const freeCreeps = Object.values(Game.creeps).filter((creep) => !creep.memory.action);
@@ -84,23 +90,14 @@ module.exports.loop = function () {
     global.actions.push([creep, creep.memory.action]);
     global.rolesCount[creep.memory.originRole || creep.memory.role] =
       (global.rolesCount[creep.memory.originRole || creep.memory.role] || 0) + 1;
-    if (!global.rooms[creep.room.name]) {
-      global.rooms[creep.room.name] = creep.room;
-    }
   }
 
   for (let creep of freeCreeps) {
     // Generate actions for all free creeps by their role
     const action = creep.nextAction();
-    // if (action.type !== 'idle') {
-    //   console.log(`${creep.who()} wants do ${action.type}`);
-    // }
     global.actions.push([creep, action]);
     global.rolesCount[creep.memory.originRole || creep.memory.role] =
       (global.rolesCount[creep.memory.originRole || creep.memory.role] || 0) + 1;
-    if (!global.rooms[creep.room.name]) {
-      global.rooms[creep.room.name] = creep.room;
-    }
   }
   console.log(`${freeCreeps.length} actions for ${freeCreeps.length} creeps has been generated`);
 
