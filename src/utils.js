@@ -1,24 +1,3 @@
-/** @param {Creep} creep **/
-function bestSource(creep) {
-  const sources = creep.room.find(FIND_SOURCES);
-  sources.sort((s1, s2) => {
-    let enterable1 = enterablePositionsAround(s1);
-    let enterable2 = enterablePositionsAround(s2);
-    let d1 = creep.pos.getRangeTo(s1);
-    let d2 = creep.pos.getRangeTo(s2);
-
-    const c1 = d1 <= 1 ? -10000 : d1 - enterable1 * 15;
-    const c2 = d2 <= 1 ? -10000 : d2 - enterable2 * 15;
-
-    return c1 - c2;
-  });
-  if (sources.length) {
-    return sources[0];
-  } else {
-    return null;
-  }
-}
-
 /** @param {RoomObject} o **/
 function enterablePositionsAround(o) {
   let count = 0;
@@ -47,7 +26,6 @@ function isEnterable(pos) {
         if (OBSTACLE_OBJECT_TYPES.includes(atPos[i].structure.structureType)) return false;
         break;
       case LOOK_CREEPS:
-        return false;
       case LOOK_SOURCES:
       case LOOK_MINERALS:
       case LOOK_NUKES:
@@ -61,70 +39,50 @@ function isEnterable(pos) {
   return true;
 }
 
-/**
- * 计算从指定 structure 或 source 取能量的代价
- * @param {Creep} creep
- * @param {Structure | Source} target
- * @returns {number} 代价
- */
-function calculateEnergyCost(creep, target) {
-  let cost = 0;
+/** @param {Creep} creep **/
+function closestEnergyStructure(creep) {
+  // const sources = findInMyRooms(FIND_MY_STRUCTURES, {
+  //   filter: (structure) => {
+  //     return (
+  //       (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
+  //       structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+  //     );
+  //   },
+  //   sort: (a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b),
+  // });
 
-  // 距离代价
-  const distance = creep.pos.getRangeTo(target);
-  cost += distance;
-
-  // 判断目标类型
-  if (target instanceof Source) {
-    // 如果是能量源
-    const harvestPositions = target.pos.findInRange(FIND_MY_CREEPS, 1, {
-      filter: (c) => c.memory.harvesting && c.memory.target === target.id,
-    }).length;
-
-    const maxHarvesters = target.pos.findInRange(FIND_CREEPS, 1).length;
-
-    // 采集点竞争代价
-    if (harvestPositions >= maxHarvesters) {
-      cost += 10; // 过多人时增加额外代价
-    }
-
-    // 剩余能量影响代价
-    const energyAvailability = target.energy / target.energyCapacity;
-    cost += (1 - energyAvailability) * 10; // 能量越少，代价越高
-  } else if (target instanceof Structure) {
-    // 如果是扩展或生成点等
-    if (
-      target.structureType === STRUCTURE_EXTENSION ||
-      target.structureType === STRUCTURE_SPAWN ||
-      target.structureType === STRUCTURE_CONTAINER ||
-      target.structureType === STRUCTURE_STORAGE
-    ) {
-      const energyAvailable = target.store[RESOURCE_ENERGY];
-      const energyCapacity = target.store.getCapacity(RESOURCE_ENERGY);
-
-      // 剩余能量比例
-      const energyAvailability = energyAvailable / energyCapacity;
-      cost += (1 - energyAvailability) * 10; // 能量越少，代价越高
-
-      // 检查是否有人正在取能量
-      const waitingCreeps = target.pos.findInRange(FIND_MY_CREEPS, 1, {
-        filter: (c) => c.memory.withdrawing && c.memory.target === target.id,
-      }).length;
-
-      if (waitingCreeps > 0) {
-        cost += 5 * waitingCreeps; // 每个等待者增加额外代价
-      }
-    }
+  // if (sources.length == 0) {
+  //   return null;
+  // } else {
+  //   return sources[0];
+  // }
+  const structures = creep.room
+    .find(FIND_MY_STRUCTURES, {
+      filter: (structure) => {
+        return (
+          (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
+          structure.store[RESOURCE_ENERGY] > 0
+        );
+      },
+    })
+    .sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
+  if (structures.length == 0) {
+    return null;
   } else {
-    // 如果目标不是 source 或 structure，返回极高代价
-    return Infinity;
+    return structures[0];
   }
+}
 
-  return cost;
+function findInMyRooms(type, opts) {
+  return Object.values(global.rooms).map((room) => room.find(type, opts));
+}
+
+function sortRoomsByDistance(rooms, pos) {
+  return rooms.sort((a, b) => a.pos.getRangeTo(pos) - b.pos.getRangeTo(pos));
 }
 
 module.exports = {
-  bestSource,
-  isEnterable,
   enterablePositionsAround,
+  isEnterable,
+  closestEnergyStructure,
 };

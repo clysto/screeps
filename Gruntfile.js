@@ -8,7 +8,7 @@ module.exports = function (grunt) {
       options: {
         email: 'maoyachen55@gmail.com',
         token: process.env['SCREEPS_TOKEN'],
-        branch: 'default',
+        branch: 'beta',
       },
       dist: {
         src: ['src/*.js'],
