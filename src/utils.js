@@ -80,8 +80,8 @@ function findClosestInMyRooms(creep, type, opts) {
   targets.sort(
     (a, b) =>
       creep.pos.getRangeTo(a) +
-      (creep.room === a.room ? 0 : 1000) -
-      (creep.pos.getRangeTo(b) + (creep.room === b.room ? 0 : 1000))
+      (creep.room === a.room ? 0 : 1000000000000) -
+      (creep.pos.getRangeTo(b) + (creep.room === b.room ? 0 : 1000000000000))
   );
   return targets[0];
 }

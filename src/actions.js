@@ -54,8 +54,12 @@ function moveTo(creep) {
 /** @param {Creep} creep **/
 function buildStructure(creep) {
   const target = Game.getObjectById(creep.memory.action.target);
-  if (creep.build(target) == ERR_NOT_IN_RANGE) {
+  const status = creep.build(target);
+  if (status == ERR_NOT_IN_RANGE) {
     creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
+  } else if (status != OK) {
+    // action stop
+    creep.memory.action = undefined;
   }
   if (creep.store[RESOURCE_ENERGY] == 0) {
     // action stop
@@ -68,6 +72,7 @@ function withdrawEnergy(creep) {
   const target = Game.getObjectById(creep.memory.action.target);
   if (!target || target.store[RESOURCE_ENERGY] == 0) {
     // action stop
+    creep.say('🛑');
     creep.memory.action = undefined;
     return;
   }
@@ -125,6 +130,17 @@ function moveToRoom(creep) {
   }
 }
 
+function attack(creep) {
+  const target = Game.getObjectById(creep.memory.action.target);
+  if (creep.attack(target) == ERR_NOT_IN_RANGE) {
+    creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000' } });
+  }
+  if (target.hits == 0) {
+    // action stop
+    creep.memory.action = undefined;
+  }
+}
+
 //*********************** GLOBAL ACTIONS ***********************//
 function spawnCreep(action) {
   let { role, body, spawn } = action;
@@ -152,4 +168,5 @@ module.exports = {
   repairStructure,
   spawnCreep,
   moveToRoom,
+  attack,
 };

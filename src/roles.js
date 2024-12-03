@@ -10,6 +10,13 @@ const harvester = {
   /** @param {Creep} creep **/
   nextAction: function (creep) {
     if (creep.store.getFreeCapacity() > 0) {
+      // If we already harvested from a source, prefer to keep harvesting from it
+      if (creep.memory._harvestSourceId) {
+        const source = Game.getObjectById(creep.memory._harvestSourceId);
+        if (source && harvester.harvestersAtSource(source) <= enterablePositionsAround(source)) {
+          return { type: 'harvestSource', target: source.id };
+        }
+      }
       const source = findClosestInMyRooms(creep, FIND_SOURCES, {
         filter: (source) => {
           let count = harvester.harvestersAtSource(source);
@@ -17,9 +24,10 @@ const harvester = {
         },
       });
       if (source) {
+        creep.memory._harvestSourceId = source.id;
         return { type: 'harvestSource', target: source.id };
       } else {
-        return { type: 'moveToRoom', target: 'E54S17' };
+        return { type: 'moveToRoom', target: 'E54S19' };
       }
     } else {
       const structure = findClosestInMyRooms(creep, FIND_MY_STRUCTURES, {
@@ -52,7 +60,11 @@ const upgrader = {
         return { type: 'idle', reason: 'no energy' };
       }
     } else {
-      const controller = creep.room.controller;
+      const controller = findClosestInMyRooms(creep, FIND_MY_STRUCTURES, {
+        filter: (structure) => {
+          return structure.structureType == STRUCTURE_CONTROLLER;
+        },
+      });
       return { type: 'upgradeController', target: controller.id };
     }
   },
@@ -114,4 +126,16 @@ const repairer = {
   },
 };
 
-module.exports = { harvester, upgrader, builder, repairer };
+const soldier = {
+  /** @param {Creep} creep **/
+  nextAction: function (creep) {
+    const target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+    if (target) {
+      return { type: 'attack', target: target.id };
+    } else {
+      return { type: 'idle', reason: 'no targets' };
+    }
+  },
+};
+
+module.exports = { harvester, upgrader, builder, repairer, soldier };

@@ -18,6 +18,10 @@ Creep.prototype.do = function (action) {
   this.memory.action = action;
   ALL_ACTIONS[action.type](this);
 
+  if (this.memory.role === 'soldier') {
+    return;
+  }
+
   if (this.memory.originRole) {
     this.memory.timeToOriginRole -= 1;
     if (this.memory.timeToOriginRole <= 0) {
@@ -40,10 +44,27 @@ function globalDo(action) {
 }
 
 const BALANCED_ROLES = {
-  harvester: 10,
-  upgrader: 3,
-  builder: 5,
-  repairer: 5,
+  harvester: {
+    count: 11,
+    priority: 99,
+  },
+  upgrader: {
+    count: 3,
+    priority: 90,
+  },
+  builder: {
+    count: 6,
+    priority: 80,
+  },
+  repairer: {
+    count: 2,
+    priority: 70,
+  },
+  soldier: {
+    count: 2,
+    body: [ATTACK, ATTACK, MOVE, MOVE],
+    priority: 100,
+  },
 };
 
 module.exports.loop = function () {
@@ -81,14 +102,21 @@ module.exports.loop = function () {
       global.rooms[creep.room.name] = creep.room;
     }
   }
+  console.log(`${freeCreeps.length} actions for ${freeCreeps.length} creeps has been generated`);
 
   // Generate global actions
   for (let role of Object.keys(BALANCED_ROLES)) {
     const count = global.rolesCount[role] || 0;
-    if (count < BALANCED_ROLES[role]) {
+    if (count < BALANCED_ROLES[role].count) {
       global.actions.push([
         null,
-        { type: 'spawnCreep', role: role, body: [WORK, CARRY, MOVE], spawn: 'Spawn1', priority: 100 - count },
+        {
+          type: 'spawnCreep',
+          role: role,
+          body: BALANCED_ROLES[role].body || [WORK, CARRY, MOVE],
+          spawn: 'Spawn1',
+          priority: BALANCED_ROLES[role].priority,
+        },
       ]);
       console.log(`Spawning ${role}`);
     }
