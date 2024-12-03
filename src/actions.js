@@ -3,6 +3,9 @@
 /** @param {Creep} creep **/
 function idle(creep) {
   creep.say('💤');
+  if (creep.memory.action.reason) {
+    console.log(`${creep.who()} is idle because ${creep.memory.action.reason}`);
+  }
   // random move
   creep.move(Math.floor(Math.random() * 8) + 1);
   if (creep.memory.action.idleTicks == undefined) {
@@ -70,7 +73,7 @@ function withdrawEnergy(creep) {
   }
   const status = creep.withdraw(target, RESOURCE_ENERGY);
   if (status == ERR_NOT_IN_RANGE) {
-    creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
+    creep.moveTo(target, { visualizePathStyle: { stroke: '#ffaa00' } });
   }
   if (status == ERR_NOT_ENOUGH_RESOURCES || creep.store.getFreeCapacity() == 0) {
     // action stop

@@ -18,6 +18,13 @@ function globalDo(action) {
   return ALL_ACTIONS[action.type](action);
 }
 
+const BALANCED_ROLES = {
+  harvester: 10,
+  upgrader: 5,
+  builder: 5,
+  repairer: 5,
+};
+
 module.exports.loop = function () {
   // Global informations
   global.actions = [];
@@ -30,7 +37,7 @@ module.exports.loop = function () {
   const busyCreeps = Object.values(Game.creeps).filter((creep) => creep.memory.action);
   const freeCreeps = Object.values(Game.creeps).filter((creep) => !creep.memory.action);
 
-  console.log('Free creeps: ', freeCreeps.length);
+  console.log('Free creeps:', freeCreeps.length);
 
   for (let creep of busyCreeps) {
     // Continue with the current action for all busy creeps
@@ -55,18 +62,20 @@ module.exports.loop = function () {
   }
 
   // Generate global actions
-  for (let role of Object.keys(ALL_ROLES)) {
+  for (let role of Object.keys(BALANCED_ROLES)) {
     const count = global.rolesCount[role] || 0;
-    if (count < 5) {
+    if (count < BALANCED_ROLES[role]) {
       global.actions.push([
         null,
-        { type: 'spawnCreep', role: role, body: [WORK, CARRY, MOVE], spawn: 'Spawn1', priority: 10 },
+        { type: 'spawnCreep', role: role, body: [WORK, CARRY, MOVE], spawn: 'Spawn1', priority: 5 },
       ]);
     }
   }
 
   // Schedule all actions by priority
-  // global.actions.sort(([_, actionA], [_, actionB]) => (actionB.priority || 1) - (actionA.priority || 1));
+  global.actions.sort((a, b) => {
+    return (b[1].priority || 1) - (a[1].priority || 1);
+  });
   for (let [creep, action] of global.actions) {
     if (creep) {
       // creep action

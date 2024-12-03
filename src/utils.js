@@ -41,27 +41,23 @@ function isEnterable(pos) {
 
 /** @param {Creep} creep **/
 function closestEnergyStructure(creep) {
-  // const sources = findInMyRooms(FIND_MY_STRUCTURES, {
-  //   filter: (structure) => {
-  //     return (
-  //       (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
-  //       structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-  //     );
-  //   },
-  //   sort: (a, b) => creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b),
-  // });
-
-  // if (sources.length == 0) {
-  //   return null;
-  // } else {
-  //   return sources[0];
-  // }
   const structures = creep.room
     .find(FIND_MY_STRUCTURES, {
       filter: (structure) => {
+        const prevActions = global.actions.filter(
+          ([_, action]) => action.type == 'withdrawEnergy' && action.target == structure.id
+        );
+
+        const prevAccumulator = prevActions.reduce((acc, [creep, _]) => {
+          return acc + creep.store.getFreeCapacity(RESOURCE_ENERGY);
+        }, 0);
+
         return (
-          (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
-          structure.store[RESOURCE_ENERGY] > 0
+          (structure.structureType == STRUCTURE_EXTENSION ||
+            structure.structureType == STRUCTURE_SPAWN ||
+            structure.structureType == STRUCTURE_CONTAINER) &&
+          structure.store[RESOURCE_ENERGY] > 0 &&
+          prevAccumulator < structure.store[RESOURCE_ENERGY]
         );
       },
     })
