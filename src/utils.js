@@ -69,16 +69,26 @@ function closestEnergyStructure(creep) {
   }
 }
 
-function findInMyRooms(type, opts) {
-  return Object.values(global.rooms).map((room) => room.find(type, opts));
-}
-
-function sortRoomsByDistance(rooms, pos) {
-  return rooms.sort((a, b) => a.pos.getRangeTo(pos) - b.pos.getRangeTo(pos));
+function findClosestInMyRooms(creep, type, opts) {
+  const targets = [];
+  for (let room of Object.values(global.rooms)) {
+    targets.push(...room.find(type, opts));
+  }
+  if (targets.length == 0) {
+    return null;
+  }
+  targets.sort(
+    (a, b) =>
+      creep.pos.getRangeTo(a) +
+      (creep.room === a.room ? 0 : 1000) -
+      (creep.pos.getRangeTo(b) + (creep.room === b.room ? 0 : 1000))
+  );
+  return targets[0];
 }
 
 module.exports = {
   enterablePositionsAround,
   isEnterable,
   closestEnergyStructure,
+  findClosestInMyRooms,
 };

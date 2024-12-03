@@ -1,4 +1,4 @@
-const { enterablePositionsAround, closestEnergyStructure } = require('utils');
+const { enterablePositionsAround, closestEnergyStructure, findClosestInMyRooms } = require('utils');
 
 const harvester = {
   harvestersAtSource: function (source) {
@@ -10,7 +10,7 @@ const harvester = {
   /** @param {Creep} creep **/
   nextAction: function (creep) {
     if (creep.store.getFreeCapacity() > 0) {
-      const source = creep.pos.findClosestByPath(FIND_SOURCES, {
+      const source = findClosestInMyRooms(creep, FIND_SOURCES, {
         filter: (source) => {
           let count = harvester.harvestersAtSource(source);
           return enterablePositionsAround(source) > count;
@@ -19,10 +19,10 @@ const harvester = {
       if (source) {
         return { type: 'harvestSource', target: source.id };
       } else {
-        return { type: 'idle', reason: 'no sources' };
+        return { type: 'moveToRoom', target: 'E54S17' };
       }
     } else {
-      const structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+      const structure = findClosestInMyRooms(creep, FIND_MY_STRUCTURES, {
         filter: (structure) => {
           return (
             (structure.structureType == STRUCTURE_EXTENSION ||
@@ -49,7 +49,7 @@ const upgrader = {
       if (structure) {
         return { type: 'withdrawEnergy', target: structure.id };
       } else {
-        return { type: 'idle' };
+        return { type: 'idle', reason: 'no energy' };
       }
     } else {
       const controller = creep.room.controller;
@@ -66,7 +66,17 @@ const builder = {
       if (structure) {
         return { type: 'withdrawEnergy', target: structure.id };
       } else {
-        return { type: 'idle', reason: 'no energy' };
+        const source = creep.pos.findClosestByPath(FIND_SOURCES, {
+          filter: (source) => {
+            let count = harvester.harvestersAtSource(source);
+            return enterablePositionsAround(source) > count;
+          },
+        });
+        if (source) {
+          return { type: 'harvestSource', target: source.id };
+        } else {
+          return { type: 'idle', reason: 'no sources' };
+        }
       }
     } else {
       const constructionSite = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES);
@@ -87,7 +97,7 @@ const repairer = {
       if (structure) {
         return { type: 'withdrawEnergy', target: structure.id };
       } else {
-        return { type: 'idle' };
+        return { type: 'idle', reason: 'no energy' };
       }
     } else {
       const structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
@@ -98,7 +108,7 @@ const repairer = {
       if (structure) {
         return { type: 'repairStructure', target: structure.id };
       } else {
-        return { type: 'idle' };
+        return { type: 'idle', reason: 'no structures to repair' };
       }
     }
   },

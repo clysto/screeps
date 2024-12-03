@@ -71,6 +71,10 @@ function withdrawEnergy(creep) {
     creep.memory.action = undefined;
     return;
   }
+  if (Game.stopWithdraw && Game.stopWithdraw[target.room.name]) {
+    creep.memory.action = undefined;
+    return;
+  }
   const status = creep.withdraw(target, RESOURCE_ENERGY);
   if (status == ERR_NOT_IN_RANGE) {
     creep.moveTo(target, { visualizePathStyle: { stroke: '#ffaa00' } });
@@ -107,9 +111,17 @@ function repairStructure(creep) {
 
 /** @param {Creep} creep **/
 function moveToRoom(creep) {
+  if (!creep.memory.action.target) {
+    // action stop
+    creep.memory.action = undefined;
+    return;
+  }
   const target = new RoomPosition(25, 25, creep.memory.action.target);
   if (creep.room.name != creep.memory.action.target) {
     creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
+  } else {
+    // action stop
+    creep.memory.action = undefined;
   }
 }
 
@@ -118,9 +130,15 @@ function spawnCreep(action) {
   let { role, body, spawn } = action;
   const name = Game.time;
   spawn = Game.spawns[spawn];
-  spawn.spawnCreep(body, name, {
+  const status = spawn.spawnCreep(body, name, {
     memory: { role: role },
   });
+  if (status == ERR_NOT_ENOUGH_ENERGY) {
+    if (!Game.stopWithdraw) {
+      Game.stopWithdraw = {};
+    }
+    Game.stopWithdraw[spawn.room.name] = true;
+  }
 }
 
 module.exports = {
@@ -133,4 +151,5 @@ module.exports = {
   buildStructure,
   repairStructure,
   spawnCreep,
+  moveToRoom,
 };
