@@ -1,14 +1,17 @@
 const ROLES_CONFIG = {
   harvester: {
-    count: 11,
+    count: 15,
+    body: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
     priority: 99,
   },
   upgrader: {
     count: 3,
+    body: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
     priority: 90,
   },
   builder: {
     count: 6,
+    body: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
     priority: 80,
   },
   repairer: {
@@ -22,10 +25,12 @@ const ROLES_CONFIG = {
   },
   transporter: {
     count: 3,
-    priority: 1000,
+    body: [CARRY, MOVE, CARRY, MOVE, CARRY, MOVE],
+    priority: 90,
   },
 };
 
-const HARVEST_AT = ['E54S18', 'E54S19'];
+// creeps will harvest at these rooms in order
+const HARVEST_AT = ['E54S18', 'E54S19', 'E54S17'];
 
 module.exports = { ROLES_CONFIG, HARVEST_AT };

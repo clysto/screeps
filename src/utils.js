@@ -71,7 +71,7 @@ function whereToWithdraw(creep, filter) {
 
 function findClosestInMyRooms(creep, type, opts) {
   const targets = [];
-  for (let room of Object.values(global.rooms)) {
+  for (let room of [creep.room, ...Object.values(global.rooms)]) {
     targets.push(...room.find(type, opts));
   }
   if (targets.length == 0) {
@@ -80,8 +80,8 @@ function findClosestInMyRooms(creep, type, opts) {
   targets.sort(
     (a, b) =>
       creep.pos.getRangeTo(a) +
-      (creep.room === a.room ? 0 : 1000) -
-      (creep.pos.getRangeTo(b) + (creep.room === b.room ? 0 : 1000))
+      (creep.room === a.room ? 0 : 10000) -
+      (creep.pos.getRangeTo(b) + (creep.room === b.room ? 0 : 10000))
   );
   return targets[0];
 }

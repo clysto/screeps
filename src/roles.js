@@ -5,6 +5,8 @@ const {
   canStoreEnergy,
 } = require('utils');
 
+const { HARVEST_AT } = require('config');
+
 const harvester = {
   harvestersAtSource: function (source) {
     return global.actions.filter(([_, action]) => {
@@ -22,7 +24,7 @@ const harvester = {
           return { type: 'harvestSource', target: source.id };
         }
       }
-      const source = findClosestInMyRooms(creep, FIND_SOURCES, {
+      const source = findClosestInMyRooms(creep, FIND_SOURCES_ACTIVE, {
         filter: (source) => {
           let count = harvester.harvestersAtSource(source);
           return enterablePositionsAround(source) > count;
@@ -32,8 +34,14 @@ const harvester = {
         creep.memory._harvestSourceId = source.id;
         return { type: 'harvestSource', target: source.id };
       } else {
-        delete creep.memory._harvestSourceId;
-        return { type: 'moveToRoom', target: 'E54S19' };
+        // find a room to harvest
+        const harvestRooms = HARVEST_AT.filter((roomName) => !global.rooms[roomName]);
+        if (harvestRooms.length > 0) {
+          delete creep.memory._harvestSourceId;
+          return { type: 'moveToRoom', target: harvestRooms[0] };
+        } else {
+          return { type: 'idle', reason: 'no rooms to harvest' };
+        }
       }
     } else {
       const structure = findClosestInMyRooms(creep, FIND_STRUCTURES, {
@@ -129,7 +137,10 @@ const soldier = {
     if (target) {
       return { type: 'attack', target: target.id };
     } else {
-      return { type: 'idle', reason: 'no targets' };
+      // patrol in a random room
+      const roomNames = Object.keys(global.rooms);
+      const roomName = roomNames[Math.floor(Math.random() * roomNames.length)];
+      return { type: 'moveToRoom', target: roomName };
     }
   },
 };
