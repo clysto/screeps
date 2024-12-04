@@ -92,7 +92,7 @@ function withdrawEnergy(creep) {
     creep.memory.action = undefined;
     return;
   }
-  if (global._stopWithdraw && global._stopWithdraw[target.room.name]) {
+  if (global.store._stopWithdraw && global.store._stopWithdraw[target.room.name]) {
     creep.say('🛑');
     creep.memory.action = undefined;
     return;
@@ -171,10 +171,10 @@ function spawnCreep(action) {
     memory: { role: role },
   });
   if (status == ERR_NOT_ENOUGH_ENERGY) {
-    if (!global._stopWithdraw) {
-      global._stopWithdraw = {};
+    if (!global.store._stopWithdraw) {
+      global.store._stopWithdraw = {};
     }
-    global._stopWithdraw[spawn.room.name] = true;
+    global.store._stopWithdraw[spawn.room.name] = true;
   }
 }
 

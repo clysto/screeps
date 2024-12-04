@@ -1,4 +1,4 @@
-const { enterablePositionsAround, closestEnergyStructure, findClosestInMyRooms } = require('utils');
+const { enterablePositionsAround, closestEnergyStructure, findClosestInMyRooms, canStoreEnergy } = require('utils');
 
 const harvester = {
   harvestersAtSource: function (source) {
@@ -31,14 +31,9 @@ const harvester = {
         return { type: 'moveToRoom', target: 'E54S19' };
       }
     } else {
-      const structure = findClosestInMyRooms(creep, FIND_MY_STRUCTURES, {
+      const structure = findClosestInMyRooms(creep, FIND_STRUCTURES, {
         filter: (structure) => {
-          return (
-            (structure.structureType == STRUCTURE_EXTENSION ||
-              structure.structureType == STRUCTURE_SPAWN ||
-              structure.structureType == STRUCTURE_CONTAINER) &&
-            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-          );
+          return canStoreEnergy(structure);
         },
       });
       if (structure) {
@@ -106,7 +101,7 @@ const repairer = {
       const structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (structure) => {
           return (
-            (structure.my || structure.structureType == STRUCTURE_ROAD) && structure.hits < structure.hitsMax * 0.66
+            (structure.my || structure.structureType == STRUCTURE_ROAD) && structure.hits < structure.hitsMax * 0.8
           );
         },
       });

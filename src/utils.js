@@ -42,7 +42,7 @@ function isEnterable(pos) {
 /** @param {Creep} creep **/
 function closestEnergyStructure(creep) {
   const structures = creep.room
-    .find(FIND_MY_STRUCTURES, {
+    .find(FIND_STRUCTURES, {
       filter: (structure) => {
         const prevActions = global.actions.filter(
           ([_, action]) => action.type == 'withdrawEnergy' && action.target == structure.id
@@ -52,13 +52,7 @@ function closestEnergyStructure(creep) {
           return acc + creep.store.getFreeCapacity(RESOURCE_ENERGY);
         }, 0);
 
-        return (
-          (structure.structureType == STRUCTURE_EXTENSION ||
-            structure.structureType == STRUCTURE_SPAWN ||
-            structure.structureType == STRUCTURE_CONTAINER) &&
-          structure.store[RESOURCE_ENERGY] > 0 &&
-          prevAccumulator < structure.store[RESOURCE_ENERGY]
-        );
+        return canWithdrawEnergy(structure) && prevAccumulator < structure.store[RESOURCE_ENERGY];
       },
     })
     .sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
@@ -86,9 +80,43 @@ function findClosestInMyRooms(creep, type, opts) {
   return targets[0];
 }
 
+/** @param {Structure} structure **/
+function canStoreEnergy(structure) {
+  if (
+    structure.structureType == STRUCTURE_CONTAINER &&
+    structure.room.controller.my &&
+    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+  ) {
+    return true;
+  }
+  return (
+    (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
+    structure.my &&
+    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+  );
+}
+
+/** @param {Structure} structure **/
+function canWithdrawEnergy(structure) {
+  if (
+    structure.structureType == STRUCTURE_CONTAINER &&
+    structure.room.controller.my &&
+    structure.store[RESOURCE_ENERGY] > 0
+  ) {
+    return true;
+  }
+  return (
+    (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
+    structure.my &&
+    structure.store[RESOURCE_ENERGY] > 0
+  );
+}
+
 module.exports = {
   enterablePositionsAround,
   isEnterable,
   closestEnergyStructure,
   findClosestInMyRooms,
+  canStoreEnergy,
+  canWithdrawEnergy,
 };

@@ -72,6 +72,8 @@ module.exports.loop = function () {
   global.actions = [];
   global.rolesCount = {};
   global.rooms = {};
+  // Store only live for one tick
+  global.store = {};
   for (let spawn of Object.values(Game.spawns)) {
     global.rooms[spawn.room.name] = spawn.room;
   }
