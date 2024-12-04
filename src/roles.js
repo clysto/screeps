@@ -1,4 +1,9 @@
-const { enterablePositionsAround, closestEnergyStructure, findClosestInMyRooms, canStoreEnergy } = require('utils');
+const {
+  enterablePositionsAround,
+  whereToWithdraw: whereToWithdraw,
+  findClosestInMyRooms,
+  canStoreEnergy,
+} = require('utils');
 
 const harvester = {
   harvestersAtSource: function (source) {
@@ -49,7 +54,7 @@ const upgrader = {
   /** @param {Creep} creep **/
   nextAction: function (creep) {
     if (creep.store[RESOURCE_ENERGY] == 0) {
-      const structure = closestEnergyStructure(creep);
+      const structure = whereToWithdraw(creep);
       if (structure) {
         return { type: 'withdrawEnergy', target: structure.id };
       } else {
@@ -70,7 +75,7 @@ const builder = {
   /** @param {Creep} creep **/
   nextAction: function (creep) {
     if (creep.store[RESOURCE_ENERGY] == 0) {
-      const structure = closestEnergyStructure(creep);
+      const structure = whereToWithdraw(creep);
       if (structure) {
         return { type: 'withdrawEnergy', target: structure.id };
       } else {
@@ -91,7 +96,7 @@ const repairer = {
   /** @param {Creep} creep **/
   nextAction: function (creep) {
     if (creep.store[RESOURCE_ENERGY] == 0) {
-      const structure = closestEnergyStructure(creep);
+      const structure = whereToWithdraw(creep);
       if (structure) {
         return { type: 'withdrawEnergy', target: structure.id };
       } else {
@@ -101,7 +106,10 @@ const repairer = {
       const structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (structure) => {
           return (
-            (structure.my || structure.structureType == STRUCTURE_ROAD) && structure.hits < structure.hitsMax * 0.8
+            (structure.my ||
+              structure.structureType == STRUCTURE_ROAD ||
+              structure.structureType == STRUCTURE_CONTAINER) &&
+            structure.hits < structure.hitsMax * 0.8
           );
         },
       });
@@ -126,4 +134,29 @@ const soldier = {
   },
 };
 
-module.exports = { harvester, upgrader, builder, repairer, soldier };
+const transporter = {
+  /** @param {Creep} creep **/
+  nextAction: function (creep) {
+    if (creep.store[RESOURCE_ENERGY] == 0) {
+      const structure = whereToWithdraw(creep, (structure) => structure.structureType == STRUCTURE_CONTAINER);
+      if (structure) {
+        return { type: 'withdrawEnergy', target: structure.id };
+      } else {
+        return harvester.nextAction(creep);
+      }
+    } else {
+      const structure = findClosestInMyRooms(creep, FIND_STRUCTURES, {
+        filter: (structure) => {
+          return canStoreEnergy(structure) && structure.structureType != STRUCTURE_CONTAINER;
+        },
+      });
+      if (structure) {
+        return { type: 'transferEnergy', target: structure.id };
+      } else {
+        return { type: 'idle', reason: 'no structures' };
+      }
+    }
+  },
+};
+
+module.exports = { harvester, upgrader, builder, repairer, soldier, transporter };

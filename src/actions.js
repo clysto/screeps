@@ -1,10 +1,12 @@
+const { log } = require('utils');
+
 //*********************** CREEP ACTIONS ***********************//
 
 /** @param {Creep} creep **/
 function idle(creep) {
   creep.say('💤');
   if (creep.memory.action.reason) {
-    console.log(`${creep.who()} is idle because ${creep.memory.action.reason}`);
+    log(`${creep.who()} is idle because ${creep.memory.action.reason}`);
   }
 
   const flag = creep.pos.findClosestByPath(FIND_FLAGS, {
@@ -92,7 +94,7 @@ function withdrawEnergy(creep) {
     creep.memory.action = undefined;
     return;
   }
-  if (global.store._stopWithdraw && global.store._stopWithdraw[target.room.name]) {
+  if (global.store._stopWithdraw && global.store._stopWithdraw[target.room.name] && creep.role !== 'transporter') {
     creep.say('🛑');
     creep.memory.action = undefined;
     return;

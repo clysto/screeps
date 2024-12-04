@@ -1,5 +1,8 @@
 const ALL_ACTIONS = require('actions');
 const ALL_ROLES = require('roles');
+const ALL_COMMANDS = require('commands');
+const { ROLES_CONFIG } = require('config');
+const { log } = require('utils');
 
 Creep.prototype.who = function () {
   return `Creep ${this.name} (${this.memory.role})`;
@@ -43,32 +46,13 @@ function globalDo(action) {
   ALL_ACTIONS[action.type](action);
 }
 
-const BALANCED_ROLES = {
-  harvester: {
-    count: 11,
-    priority: 99,
-  },
-  upgrader: {
-    count: 3,
-    priority: 90,
-  },
-  builder: {
-    count: 6,
-    priority: 80,
-  },
-  repairer: {
-    count: 5,
-    priority: 70,
-  },
-  soldier: {
-    count: 2,
-    body: [ATTACK, ATTACK, MOVE, MOVE],
-    priority: 100,
-  },
-};
+function exec(cmd, ...args) {
+  return ALL_COMMANDS[cmd](args);
+}
 
 module.exports.loop = function () {
   // Global informations
+  global.exec = exec;
   global.actions = [];
   global.rolesCount = {};
   global.rooms = {};
@@ -81,8 +65,8 @@ module.exports.loop = function () {
     global.rooms[creep.room.name] = creep.room;
   }
 
-  console.log(`===================== Tick ${Game.time} =====================`);
-  console.log(`${Object.keys(Game.creeps).length} creeps in ${Object.keys(global.rooms).length} rooms`);
+  log(`===================== Tick ${Game.time} =====================`);
+  log(`${Object.keys(Game.creeps).length} creeps in ${Object.keys(global.rooms).length} rooms`);
 
   const busyCreeps = Object.values(Game.creeps).filter((creep) => creep.memory.action);
   const freeCreeps = Object.values(Game.creeps).filter((creep) => !creep.memory.action);
@@ -101,23 +85,23 @@ module.exports.loop = function () {
     global.rolesCount[creep.memory.originRole || creep.memory.role] =
       (global.rolesCount[creep.memory.originRole || creep.memory.role] || 0) + 1;
   }
-  console.log(`${freeCreeps.length} actions for ${freeCreeps.length} creeps has been generated`);
+  log(`${freeCreeps.length} actions for ${freeCreeps.length} creeps has been generated`);
 
   // Generate global actions
-  for (let role of Object.keys(BALANCED_ROLES)) {
+  for (let role of Object.keys(ROLES_CONFIG)) {
     const count = global.rolesCount[role] || 0;
-    if (count < BALANCED_ROLES[role].count) {
+    if (count < ROLES_CONFIG[role].count) {
       global.actions.push([
         null,
         {
           type: 'spawnCreep',
           role: role,
-          body: BALANCED_ROLES[role].body || [WORK, CARRY, MOVE],
+          body: ROLES_CONFIG[role].body || [WORK, CARRY, MOVE],
           spawn: 'Spawn1',
-          priority: BALANCED_ROLES[role].priority,
+          priority: ROLES_CONFIG[role].priority,
         },
       ]);
-      console.log(`Spawning ${role}`);
+      log(`Spawning ${role}`);
     }
   }
 
@@ -139,14 +123,7 @@ module.exports.loop = function () {
   for (let name in Memory.creeps) {
     if (!Game.creeps[name]) {
       delete Memory.creeps[name];
-      console.log('Clearing non-existing creep memory:', name);
-    }
-  }
-
-  // Stats
-  if (Game.time % 10 == 0) {
-    for (let role of Object.keys(global.rolesCount)) {
-      console.log(`${role}: ${global.rolesCount[role]}`);
+      log('Clearing non-existing creep memory:', name);
     }
   }
 };

@@ -40,7 +40,7 @@ function isEnterable(pos) {
 }
 
 /** @param {Creep} creep **/
-function closestEnergyStructure(creep) {
+function whereToWithdraw(creep, filter) {
   const structures = creep.room
     .find(FIND_STRUCTURES, {
       filter: (structure) => {
@@ -52,7 +52,13 @@ function closestEnergyStructure(creep) {
           return acc + creep.store.getFreeCapacity(RESOURCE_ENERGY);
         }, 0);
 
-        return canWithdrawEnergy(structure) && prevAccumulator < structure.store[RESOURCE_ENERGY];
+        if (filter) {
+          return (
+            canWithdrawEnergy(structure) && prevAccumulator < structure.store[RESOURCE_ENERGY] && filter(structure)
+          );
+        } else {
+          return canWithdrawEnergy(structure) && prevAccumulator < structure.store[RESOURCE_ENERGY];
+        }
       },
     })
     .sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
@@ -112,11 +118,18 @@ function canWithdrawEnergy(structure) {
   );
 }
 
+function log(s) {
+  if (Memory.log) {
+    console.log(s);
+  }
+}
+
 module.exports = {
   enterablePositionsAround,
   isEnterable,
-  closestEnergyStructure,
+  whereToWithdraw,
   findClosestInMyRooms,
   canStoreEnergy,
   canWithdrawEnergy,
+  log,
 };

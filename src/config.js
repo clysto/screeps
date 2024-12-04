@@ -20,6 +20,12 @@ const ROLES_CONFIG = {
     body: [ATTACK, ATTACK, MOVE, MOVE],
     priority: 100,
   },
+  transporter: {
+    count: 3,
+    priority: 1000,
+  },
 };
 
 const HARVEST_AT = ['E54S18', 'E54S19'];
+
+module.exports = { ROLES_CONFIG, HARVEST_AT };
